@@ -82,7 +82,11 @@ SCENARIO("DatabaseConfig rejects invalid structures", "[config]") {
             {"user", "pass", "localhost", std::nullopt, "prod_db", "PostgresQL",
              "PostgresQL requires username, password, host, and port."},
 
-            // 4. SQLite holding restricted credentials
+            // 4. Invalid port value
+            {"user", "pass", "localhost", -3, "prod_db", "PostgresQL",
+             "Port must be a positive integer."},
+
+            // 5. SQLite holding restricted credentials
             {"admin", std::nullopt, std::nullopt, std::nullopt, "memory_db",
              "SQLite",
              "SQLite configuration cannot contain username, password, host, or "
