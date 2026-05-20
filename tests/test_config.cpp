@@ -7,101 +7,93 @@
 
 #include "config.hpp"
 
+// Type aliases
 using Catch::Matchers::ContainsSubstring;
+using Params = DatabaseConfig::ConnectionParams;
+using DBType = DatabaseConfig::DatabaseType;
 
-SCENARIO("DatabaseConfig validation and state tracking", "[config]") {
-  GIVEN("A valid SQLite configuration structure") {
-    auto name = "memory_db";
-    auto type = "SQLite";
+SCENARIO("DatabaseConfig initialization and property mapping", "[config]") {
+  GIVEN("A valid SQLite configuration") {
+    Params params = {.name = std::move("memory_db"),
+                     .dbTypeStr = std::move("SQLite")};
 
     WHEN("instantiated with completely empty credentials") {
       std::optional<DatabaseConfig> config;
+      REQUIRE_NOTHROW(config.emplace(params));
 
-      REQUIRE_NOTHROW(config.emplace(
-          DatabaseConfig::ConnectionParams{.username = std::nullopt,
-                                           .password = std::nullopt,
-                                           .host = std::nullopt,
-                                           .port = std::nullopt,
-                                           .name = name,
-                                           .dbTypeStr = type}));
-
-      THEN("the state properties are accurately assigned") {
-        REQUIRE(config->getName() == name);
-        REQUIRE(config->getDbType() == DatabaseConfig::DatabaseType::S);
-        REQUIRE_FALSE(config->getUserName().has_value());
-        REQUIRE_FALSE(config->getPassword().has_value());
-        REQUIRE_FALSE(config->getHost().has_value());
-        REQUIRE_FALSE(config->getPort().has_value());
+      THEN("properties match and credentials remain empty") {
+        CHECK(config->getName() == "memory_db");
+        CHECK(config->getDbType() == DBType::S);
+        CHECK_FALSE(config->getUserName());
+        CHECK_FALSE(config->getPassword());
+        CHECK_FALSE(config->getHost());
+        CHECK_FALSE(config->getPort());
       }
     }
   }
 
   GIVEN("Valid configurations for network-based database systems") {
-    auto [db_string, expected_enum] =
-        GENERATE(table<std::string, DatabaseConfig::DatabaseType>(
-            {{"PostgresQL", DatabaseConfig::DatabaseType::P},
-             {"MySQL", DatabaseConfig::DatabaseType::M}}));
+    auto [db_string, expected_enum] = GENERATE(table<std::string, DBType>(
+        {{"PostgresQL", DBType::P}, {"MySQL", DBType::M}}));
 
     DYNAMIC_SECTION("Validating setup for: " << db_string) {
+      Params params{.username = "user",
+                    .password = "pass",
+                    .host = "localhost",
+                    .port = 5432,
+                    .name = "prod_db",
+                    .dbTypeStr = db_string};
+
       std::optional<DatabaseConfig> config;
+      REQUIRE_NOTHROW(config.emplace(params));
 
-      REQUIRE_NOTHROW(config.emplace(
-          DatabaseConfig::ConnectionParams{.username = "user",
-                                           .password = "pass",
-                                           .host = "localhost",
-                                           .port = 5432,
-                                           .name = "prod_db",
-                                           .dbTypeStr = db_string}));
-
-      REQUIRE(config->getDbType() == expected_enum);
-      REQUIRE(config->getName() == "prod_db");
-      REQUIRE(config->getUserName() == "user");
-      REQUIRE(config->getPassword() == "pass");
-      REQUIRE(config->getHost() == "localhost");
-      REQUIRE(config->getPort() == 5432);
+      CHECK(config->getDbType() == expected_enum);
+      CHECK(config->getName() == "prod_db");
+      CHECK(config->getUserName() == "user");
+      CHECK(config->getPassword() == "pass");
+      CHECK(config->getHost() == "localhost");
+      CHECK(config->getPort() == 5432);
     }
   }
 }
 
-SCENARIO("DatabaseConfig rejects invalid structures", "[config]") {
+SCENARIO("DatabaseConfig validation failures", "[config]") {
   GIVEN("An invalid parameter configuration") {
-    auto [username, password, host, port, db_name, db_type, expected_error] =
-        GENERATE(table<std::optional<std::string>, std::optional<std::string>,
-                       std::optional<std::string>, std::optional<int>,
-                       std::string, std::string, std::string>({
+    auto [params, expected_error] = GENERATE(table<Params, std::string>(
+        {// Unknown dbType: Oracle
+         {Params{.name = "test", .dbTypeStr = "Oracle"},
+          "Unknown database type: Oracle"},
 
-            // 1. Unknown database type
-            {std::nullopt, std::nullopt, std::nullopt, std::nullopt, "test",
-             "Oracle", "Unknown database type: Oracle"},
+         // Name not provided
+         {Params{.name = "", .dbTypeStr = "SQLite"},
+          "Database configuration requires name."},
 
-            // 2. Empty target database name
-            {std::nullopt, std::nullopt, std::nullopt, std::nullopt, "",
-             "SQLite", "Database configuration requires name."},
+         // Port not provided for network-based database system
+         {Params{.username = "user",
+                 .password = "pass",
+                 .host = "localhost",
+                 .name = "prod_db",
+                 .dbTypeStr = "PostgresQL"},
+          "PostgresQL requires username, password, host, and port."},
 
-            // 3. Network DB missing parameters (e.g., missing port)
-            {"user", "pass", "localhost", std::nullopt, "prod_db", "PostgresQL",
-             "PostgresQL requires username, password, host, and port."},
+         // Invalid port input for network-based database system
+         {Params{.username = "user",
+                 .password = "pass",
+                 .host = "localhost",
+                 .port = -3,
+                 .name = "prod_db",
+                 .dbTypeStr = "PostgresQL"},
+          "Port must be a positive integer."},
 
-            // 4. Invalid port value
-            {"user", "pass", "localhost", -3, "prod_db", "PostgresQL",
-             "Port must be a positive integer."},
+         // Illegal network-based database system configuration for SQLITE
+         // configuration
+         {Params{
+              .username = "admin", .name = "memory_db", .dbTypeStr = "SQLite"},
+          "SQLite configuration cannot contain username, password, host, or "
+          "port."}}));
 
-            // 5. SQLite holding restricted credentials
-            {"admin", std::nullopt, std::nullopt, std::nullopt, "memory_db",
-             "SQLite",
-             "SQLite configuration cannot contain username, password, host, or "
-             "port."}}));
-
-    THEN(
-        "initialization throws std::invalid_argument with the correct "
-        "explanation") {
-      REQUIRE_THROWS_WITH(DatabaseConfig(DatabaseConfig::ConnectionParams{
-                              .username = username,
-                              .password = password,
-                              .host = host,
-                              .port = port,
-                              .name = db_name,
-                              .dbTypeStr = db_type}),
+    THEN("initialization throws std::invalid_argument") {
+      REQUIRE_THROWS_WITH(DatabaseConfig(params),
                           ContainsSubstring(expected_error));
     }
   }
