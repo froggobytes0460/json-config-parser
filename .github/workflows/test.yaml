@@ -1,0 +1,35 @@
+name: Build and Test
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: Build & Run Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install System Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build
+
+      - name: Cache Dependencies
+        uses: actions/cache@v4
+        with:
+          path: dependencies
+          key: ${{ runner.os }}-deps-${{ hashFiles('CMakeLists.txt') }}
+
+      - name: Configure CMake
+        run: |
+          cmake -B build -S . -G Ninja -DCMAKE_BUILD_TYPE=Release
+
+      - name: Compile Targets
+        run: cmake --build build --config Release
+
+      - name: Execute Automated Tests
+        run: ctest --test-dir build -C Release --output-on-failure
