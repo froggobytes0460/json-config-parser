@@ -13,7 +13,6 @@ ImplementationFileExtensions:
   - cpp
   - cxx
 HeaderFilterRegex: '.*'
-ExcludeHeaderFilterRegex: ''
 FormatStyle:     none
 User:            zeba
 CheckOptions:

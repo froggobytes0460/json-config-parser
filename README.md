@@ -2,7 +2,7 @@
 
 A modern C++20 utility designed to ingest JSON configuration profiles, validate their structural properties against a deterministic schema, and deserialize them into type-safe C++ runtime environments.
 
-## `  Features
+## Features
 
 * **Schema Validation**: Hard validation bounds on required database parameters.
 * **C++20 Type Safety**: Strongly-typed structures preventing "zombie state" instantiations.
@@ -35,9 +35,7 @@ During instantiation, the parser processes a text-based database identifier (`db
 | `"MySQL"`                       | `DatabaseType::M`            | Network-Based (Requires network variables)                    |
 | `"SQLite"`                      | `DatabaseType::S`            | Local File/Memory-Based (Strictly excludes network variables) |
 
----
-
-## Example
+### Example
 
 Configurations are instantiated safely by packaging properties inside an aggregate initialization struct:
 
@@ -60,3 +58,5 @@ DatabaseConfig local_config(DatabaseConfig::ConnectionParams{
     .dbTypeStr = "SQLite"
 });
 ```
+
+---
