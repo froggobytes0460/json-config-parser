@@ -38,9 +38,6 @@ DatabaseConfig::DatabaseConfig(ConnectionParams params)
             std::string(params.dbTypeStr) +
             " requires username, password, host, and port.");
       }
-      if (port <= 0) {
-        throw std::invalid_argument("Port must be a positive integer.");
-      }
       break;
 
     case DatabaseType::S:

@@ -4,37 +4,39 @@
 #include <stdexcept>
 #include <system_error>
 
-json Parser::load(const std::filesystem::path& filepath) {
-  // Preliminary check to ensure filepath is valid.
+auto Parser::db_validator_cb_factory() -> json::parser_callback_t {
+  return [is_port_key = false](int depth, json::parse_event_t event,
+                               json& parsed_element) mutable {
+    if (event == json::parse_event_t::key) {
+      is_port_key = (parsed_element == "port");
+      return true;
+    }
+
+    if (event == json::parse_event_t::value && is_port_key && depth == 2) {
+      is_port_key = false;
+      if (parsed_element.is_number_integer()) {
+        int val = parsed_element.get<int>();
+        if (val < 0 || val > 65535) {
+          throw std::out_of_range(
+              "Configuration Error: Port number out of valid range (0-65535).");
+        }
+      }
+    }
+    return true;
+  };
+}
+
+auto Parser::load(const std::filesystem::path& filepath) -> json {
   if (!std::filesystem::exists(filepath)) {
     throw std::filesystem::filesystem_error(
         "File or directory does not exist: ", filepath,
         std::make_error_code(std::errc::no_such_file_or_directory));
   }
 
-  // Check to see if file can be opened.
   std::ifstream file(filepath);
   if (!file.is_open()) {
     throw std::runtime_error("Cannot open: " + filepath.string());
   }
-  // Database config validator callback
-  auto db_validator_cb = [](int depth, json::parse_event_t event,
-                            json& parsed_element) {
-    if (event == json::parse_event_t::key && parsed_element == "port") {
-      return true;
-    }
 
-    if (event == json::parse_event_t::value && depth == 2) {
-      if (parsed_element.is_number_integer()) {
-        int val = parsed_element.get<int>();
-        if (val < 0 || val > 65535) {
-          return false;
-        }
-      }
-    }
-    return true;
-  };
-
-  // Return parsed JSON file.
-  return json::parse(file, db_validator_cb, true, false);
+  return json::parse(file, Parser::db_validator_cb_factory(), true, false);
 }
