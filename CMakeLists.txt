@@ -17,7 +17,7 @@ if(NOT "${CMAKE_CURRENT_SOURCE_DIR}" STREQUAL "${CMAKE_CURRENT_BINARY_DIR}")
 endif()
 
 # Install dependencies
-set(FETCHCONTENT_BASE_DIR "${CMAKE_SOURCE_DIR}/dependencies" CACHE PATH "Custom FetchContent base directory")
+set(FETCHCONTENT_BASE_DIR "${CMAKE_SOURCE_DIR}/dependencies" CACHE PATH "Custom FetchContent base directory") # Folder added to .gitignore
 include(FetchContent)
 
 FetchContent_Declare(
@@ -66,10 +66,16 @@ target_link_libraries(json-config-lib
 # =================================================================================
 # Testing Configuration
 # =================================================================================
+
+# Copy test fixtures to build directory to ensure `ctest` finds it.
+file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/tests/fixtures" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
+
+
 enable_testing()
 
 add_executable(json-config-parser-tests
     tests/test_config.cpp
+    tests/test_parser.cpp
 )
 
 target_link_libraries(json-config-parser-tests
@@ -80,7 +86,10 @@ target_link_libraries(json-config-parser-tests
 
 include(CTest)
 include(Catch)
-catch_discover_tests(json-config-parser-tests)
+catch_discover_tests(json-config-parser-tests
+    DISCOVERY_MODE PRE_TEST
+    PROPERTIES LABELS
+)
 # =================================================================================
 
 # Main executable target

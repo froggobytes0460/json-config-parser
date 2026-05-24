@@ -5,16 +5,18 @@
 #include <system_error>
 
 auto Parser::db_validator_cb_factory() -> json::parser_callback_t {
-  return [is_port_key = false](int depth, json::parse_event_t event,
-                               json& parsed_element) mutable {
+  return [current_key = std::string("")](int depth, json::parse_event_t event,
+                                         json& parsed_element) mutable {
     if (event == json::parse_event_t::key) {
-      is_port_key = (parsed_element == "port");
+      current_key = parsed_element.get<std::string>();
       return true;
     }
 
-    if (event == json::parse_event_t::value && is_port_key && depth == 2) {
-      is_port_key = false;
-      if (parsed_element.is_number_integer()) {
+    if (event == json::parse_event_t::value && current_key == "port" &&
+        depth == 1) {
+      current_key = "";
+
+      if (parsed_element.is_number()) {
         int val = parsed_element.get<int>();
         if (val < 0 || val > 65535) {
           throw std::out_of_range(
@@ -26,10 +28,10 @@ auto Parser::db_validator_cb_factory() -> json::parser_callback_t {
   };
 }
 
-auto Parser::load(const std::filesystem::path& filepath) -> json {
-  if (!std::filesystem::exists(filepath)) {
-    throw std::filesystem::filesystem_error(
-        "File or directory does not exist: ", filepath,
+auto Parser::load(const fs::path& filepath) -> json {
+  if (!fs::exists(filepath)) {
+    throw fs::filesystem_error(
+        "File or directory does not exist", filepath,
         std::make_error_code(std::errc::no_such_file_or_directory));
   }
 
@@ -38,5 +40,5 @@ auto Parser::load(const std::filesystem::path& filepath) -> json {
     throw std::runtime_error("Cannot open: " + filepath.string());
   }
 
-  return json::parse(file, Parser::db_validator_cb_factory(), true, false);
+  return json::parse(file, Parser::db_validator_cb_factory(), true, true);
 }
