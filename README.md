@@ -60,3 +60,37 @@ DatabaseConfig local_config(DatabaseConfig::ConnectionParams{
 ```
 
 ---
+
+## Parsing Logic
+
+The parsing logic is located in the `Parser` class, declared within [`include/parser.hpp`](include/parser.hpp). The file is parsed via `nlohmann/json` package. There is a guard against invalid input for `port` (input has to be valid integer in the range of `0-65535`).
+
+### Example Usage
+
+```cpp
+#include "parser.hpp"
+
+int main(){
+    fs::path filename{"path/to/file.json"};
+    json data = Parser::load(filename);
+}
+```
+
+---
+
+## Testing
+
+There are tests provided in [`test/`](tests/) directory and can be run by `ctest`. For running tests:
+
+```bash
+# Make build/ directory
+cmake -B build -S . -G Ninja -DCMAKE_BUILD_TYPE=Release
+
+# Cmake to build project
+cmake --build build --config Release
+
+# Run tests via ctest.
+ctest --test-dir build -C Release --output-on-failure
+```
+
+---
