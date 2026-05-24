@@ -1,0 +1,8 @@
+{
+  "username": "db_user",
+  "password": "secure_pass_123",
+  "host": "127.0.0.1",
+  "port": -33,
+  "name": "metrics_warehouse",
+  "db_type": "PostgresQL"
+}

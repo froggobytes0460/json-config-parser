@@ -76,15 +76,6 @@ SCENARIO("DatabaseConfig validation failures", "[config]") {
                  .dbTypeStr = "PostgresQL"},
           "PostgresQL requires username, password, host, and port."},
 
-         // Invalid port input for network-based database system
-         {Params{.username = "user",
-                 .password = "pass",
-                 .host = "localhost",
-                 .port = -3,
-                 .name = "prod_db",
-                 .dbTypeStr = "PostgresQL"},
-          "Port must be a positive integer."},
-
          // Illegal network-based database system configuration for SQLITE
          // configuration
          {Params{

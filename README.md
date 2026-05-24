@@ -16,14 +16,14 @@ The central operational unit is the `DatabaseConfig` class, declared within [`in
 
 ### Field Definitions
 
-| Value      | C++ Type                     | Constraints / Description                                    | Example                        |
-| ---------- | ---------------------------- | ------------------------------------------------------------ | ------------------------------ |
-| `name`     | `std::string`                | **Required**. Cannot be empty. Target system name.           | `"production_db"`              |
-| `dbType`   | `enum class`                 | **Required**. Validated engine type mapping (`P`, `M`, `S`). | `DatabaseType::P`              |
-| `username` | `std::optional<std::string>` | Required for Network DBs. Illegal on SQLite.                 | `"admin"` / `std::nullopt`     |
-| `password` | `std::optional<std::string>` | Required for Network DBs. Illegal on SQLite.                 | `"secret"` / `std::nullopt`    |
-| `host`     | `std::optional<std::string>` | Required for Network DBs. Illegal on SQLite.                 | `"127.0.0.1"` / `std::nullopt` |
-| `port`     | `std::optional<int>`         | Required for Network DBs. Illegal on SQLite.                 | `5432` / `std::nullopt`        |
+| Value      | C++ Type                     | Constraints / Description                                                      | Example                        |
+| ---------- | ---------------------------- | ------------------------------------------------------------------------------ | ------------------------------ |
+| `name`     | `std::string`                | **Required**. Cannot be empty. Target system name.                             | `"production_db"`              |
+| `dbType`   | `enum class`                 | **Required**. Validated engine type mapping (`P`, `M`, `S`).                   | `DatabaseType::P`              |
+| `username` | `std::optional<std::string>` | Required for Network DBs. Illegal on SQLite.                                   | `"admin"` / `std::nullopt`     |
+| `password` | `std::optional<std::string>` | Required for Network DBs. Illegal on SQLite.                                   | `"secret"` / `std::nullopt`    |
+| `host`     | `std::optional<std::string>` | Required for Network DBs. Illegal on SQLite.                                   | `"127.0.0.1"` / `std::nullopt` |
+| `port`     | `std::optional<int>`         | Required for Network DBs (between 0-65535). Illegal on SQLite.                 | `5432` / `std::nullopt`        |
 
 ### Database Engine Mappings
 
