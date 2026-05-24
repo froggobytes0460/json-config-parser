@@ -1,13 +1,11 @@
-name: Build and Test
+name: CI Pull Request Check
 on:
-  push:
-    branches: [main]
   pull_request:
     branches: [main]
 
 jobs:
-  test:
-    name: Build & Run Tests
+  validate:
+    name: Build, Test & Lint
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -16,7 +14,7 @@ jobs:
       - name: Install System Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y cmake ninja-build
+          sudo apt-get install -y cmake ninja-build clang-tidy
 
       - name: Cache Dependencies
         uses: actions/cache@v4
@@ -26,10 +24,17 @@ jobs:
 
       - name: Configure CMake
         run: |
-          cmake -B build -S . -G Ninja -DCMAKE_BUILD_TYPE=Release
+          cmake -B build -S . -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 
       - name: Compile Targets
         run: cmake --build build --config Release
 
+      - name: Run clang-tidy Analysis
+        run: |
+          clang-tidy src/*.cpp tests/*.cpp -p build --header-filter="include/.*" --quiet
+
       - name: Execute Automated Tests
         run: ctest --test-dir build -C Release --output-on-failure
+...
