@@ -26,7 +26,6 @@ TEST_CASE("DatabaseConfig maps valid properties correctly", "[config]") {
     CHECK_FALSE(config->getPort());
   }
 
-  // Generators pair cleanly with sections for zero boilerplate
   auto [db_string, expected_enum] = GENERATE(table<std::string, DBType>(
       {{"PostgresQL", DBType::P}, {"MySQL", DBType::M}}));
 

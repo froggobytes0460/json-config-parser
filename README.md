@@ -61,18 +61,41 @@ DatabaseConfig local_config(DatabaseConfig::ConnectionParams{
 
 ---
 
-## Parsing Logic
+## Parsing & Deserialization Logic
 
-The parsing logic is located in the `Parser` class, declared within [`include/parser.hpp`](include/parser.hpp). The file is parsed via `nlohmann/json` package. There is a guard against invalid input for `port` (input has to be valid integer in the range of `0-65535`).
+The project separates raw schema ingestion from business object instantiation across two specialized classes using the `nlohmann/json` backend:
+
+1. **`Parser`** ([`include/parser.hpp`](include/parser.hpp)): Handles file-stream ingestion, structural formatting validation, and low-level inline constraints (e.g., port values matching `0–65535`).
+2. **`Deserializer`** ([`include/deserializer.hpp`](include/deserializer.hpp)): Transforms loose, unstructured `json` objects into concrete `DatabaseConfig` instances.
+
+### Empty String Sanitization
+
+The deserialization pipeline automatically treats explicit empty JSON strings (`"username": ""`) as missing parameters. They are converted directly to `std::nullopt` before validation tracking fires, decoupling structural JSON edge cases from core domain safety guards.
 
 ### Example Usage
 
 ```cpp
-#include "parser.hpp"
+#include <iostream>
+#include <filesystem>
 
-int main(){
-    fs::path filename{"path/to/file.json"};
-    json data = Parser::load(filename);
+#include "parser.hpp"
+#include "deserializer.hpp"
+
+const filesystem::path JSON_FILE{"fixtures/normal_network.json"};
+
+int main() {
+    try {
+        // 1. Load file safely into memory
+        nlohmann::json raw_data = Parser::load(JSON_FILE);
+
+        // 2. Deserialize loose JSON directly into a validated C++ object
+        DatabaseConfig config = Deserializer::from_json(raw_data);
+
+        std::cout << "Successfully loaded: " << config.getName() << "\n";
+    } catch (const std::exception& e) {
+        std::cerr << "Configuration Error: " << e.what() << "\n";
+        return 1;
+    }
 }
 ```
 
@@ -86,10 +109,10 @@ There are tests provided in [`test/`](tests/) directory and can be run by `ctest
 # Make build/ directory
 cmake -B build -S . -G Ninja -DCMAKE_BUILD_TYPE=Release
 
-# Cmake to build project
+# CMake to build project
 cmake --build build --config Release
 
-# Run tests via ctest.
+# Run tests via ctest
 ctest --test-dir build -C Release --output-on-failure
 ```
 

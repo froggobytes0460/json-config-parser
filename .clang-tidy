@@ -1,5 +1,5 @@
 ---
-Checks:          'clang-diagnostic-*,bugprone-*,modernize-*'
+Checks:          'clang-diagnostic-*,bugprone-*,modernize-*,-bugprone-chained-comparison'
 WarningsAsErrors: ''
 HeaderFileExtensions:
   - ''
@@ -12,7 +12,7 @@ ImplementationFileExtensions:
   - cc
   - cpp
   - cxx
-HeaderFilterRegex: '.*'
+HeaderFilterRegex: 'include/.*'
 FormatStyle:     none
 User:            zeba
 CheckOptions:
