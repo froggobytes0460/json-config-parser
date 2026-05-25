@@ -49,10 +49,9 @@ FetchContent_MakeAvailable(nlohmann_json argparse catch2 fmt)
 
 # Create a library target project
 add_library(json-config-lib STATIC
-    include/config.hpp
-    include/parser.hpp
     src/config.cpp
     src/parser.cpp
+    src/deserializer.cpp
 )
 
 target_include_directories(json-config-lib PUBLIC include)
