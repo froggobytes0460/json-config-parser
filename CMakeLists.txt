@@ -52,6 +52,7 @@ add_library(json-config-lib STATIC
     src/config.cpp
     src/parser.cpp
     src/deserializer.cpp
+    src/printer.cpp
 )
 
 target_include_directories(json-config-lib PUBLIC include)
