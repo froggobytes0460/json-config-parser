@@ -5,6 +5,7 @@
 
 #include "parser.hpp"
 
+// Type aliases
 const fs::path FIXTURE_DIR{"fixtures/"};
 using Catch::Matchers::Message;
 

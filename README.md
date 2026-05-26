@@ -101,6 +101,38 @@ int main() {
 
 ---
 
+## Printer Logic
+
+The `Printer` component ([`include/printer.hpp`](include/printer.hpp)) formats a `DatabaseConfig` instance into a human‑readable, aligned representation suitable for CLI output.
+
+* **Label Width Customization** – Users can specify the maximum label width to align values neatly (minimum width is 16).
+* **Pretty‑Printing** – Prints each field cleanly. To protect network layouts and local SQLite contexts, unpopulated optional fields are hidden from the console output entirely.
+* **Extensible Output Stream** – Supports printing directly to `std::cout` by default, or to any custom output destination like standard file streams or string buffers.
+
+```cpp
+#include <iostream>
+#include "printer.hpp"
+#include "config.hpp"
+
+int main() {
+    DatabaseConfig cfg = /* ... load config ... */;
+
+    // Initialize printer with a custom padding width of 18
+    Printer printer_obj(18);
+
+    // 1. Prints directly to std::cout using the default parameter argument
+    printer_obj.printer(cfg);
+
+    // 2. Redirect output to any valid standard stream reference safely
+    std::ostream& out = std::clog;
+    printer_obj.printer(cfg, out);
+
+    return 0;
+}
+```
+
+---
+
 ## Testing
 
 There are tests provided in [`test/`](tests/) directory and can be run by `ctest`. For running tests:

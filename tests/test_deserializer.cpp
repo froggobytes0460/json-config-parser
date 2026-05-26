@@ -7,6 +7,7 @@
 #include "config.hpp"
 #include "deserializer.hpp"
 
+// Type aliases
 using Catch::Matchers::ContainsSubstring;
 
 struct SuccessTestCase {

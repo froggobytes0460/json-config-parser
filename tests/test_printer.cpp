@@ -10,6 +10,7 @@
 
 #include "printer.hpp"
 
+// Type aliases
 using Params = DatabaseConfig::ConnectionParams;
 using Catch::Matchers::ContainsSubstring;
 using Catch::Matchers::Message;
@@ -29,7 +30,7 @@ TEST_CASE("Printer accurately displays database configurations", "[printer]") {
     printer_obj.printer(config, ss);
     std::string output = ss.str();
 
-    auto width = printer_obj.getLabelWidth();
+    int width = printer_obj.getLabelWidth();
 
     CHECK_THAT(output, ContainsSubstring(fmt::format(
                            "{:<{}} {}", "Username:", width, "admin")));
@@ -54,7 +55,7 @@ TEST_CASE("Printer accurately displays database configurations", "[printer]") {
 
     printer_obj.printer(config, ss);
     std::string output = ss.str();
-    auto width = printer_obj.getLabelWidth();
+    int width = printer_obj.getLabelWidth();
 
     CHECK_THAT(output, ContainsSubstring(fmt::format(
                            "{:<{}} {}", "Database Name:", width, "test_db")));
