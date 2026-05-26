@@ -72,6 +72,21 @@ The project separates raw schema ingestion from business object instantiation ac
 
 The deserialization pipeline automatically treats explicit empty JSON strings (`"username": ""`) as missing parameters. They are converted directly to `std::nullopt` before validation tracking fires, decoupling structural JSON edge cases from core domain safety guards.
 
+### Example JSON configuration
+
+`fixtures/normal_network.json`:
+
+```json
+{
+  "username": "db_user",
+  "password": "secure_pass_123",
+  "host": "127.0.0.1",
+  "port": 5432,
+  "name": "metrics_warehouse",
+  "db_type": "PostgresQL"
+}
+```
+
 ### Example Usage
 
 ```cpp
