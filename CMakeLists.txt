@@ -77,6 +77,7 @@ add_executable(json-config-parser-tests
     tests/test_config.cpp
     tests/test_parser.cpp
     tests/test_deserializer.cpp
+    tests/test_printer.cpp
 )
 
 target_link_libraries(json-config-parser-tests
