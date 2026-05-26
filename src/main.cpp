@@ -7,6 +7,11 @@
 #include <optional>
 #include <stdexcept>
 
+#include "config.hpp"
+#include "deserializer.hpp"
+#include "parser.hpp"
+#include "printer.hpp"
+
 auto main(int argc, char** argv) -> int {
   std::filesystem::path json_file;
 
@@ -44,11 +49,28 @@ auto main(int argc, char** argv) -> int {
 
   std::optional<int> labelWidth{program.present<int>("--label-width")};
   std::ostream& out_stream = program.get<bool>("--log") ? std::clog : std::cout;
+  try {
+    // JSON file parsing
+    json data = Parser::load(json_file);
 
-  // JSON file parsing (must be stored in json object)
+    // Deserialize from json object
+    DatabaseConfig cfg = Deserializer::from_json(data);
 
-  // Deserialize from json object
+    // Print configuration object
+    Printer printer_obj =
+        labelWidth.has_value() ? Printer(labelWidth.value()) : Printer();
+    printer_obj.printer(cfg, out_stream);
+  } catch (json::parse_error& err) {
+    fmt::print(stderr, "Broken/Invalid JSON file provided.\n\n{}",
+               program.help().str());
+  } catch (json::out_of_range& err) {
+    fmt::print(stderr, "Broken/Invalid JSON file provided.\n\n{}",
+               program.help().str());
+  } catch (std::invalid_argument& err) {
+    fmt::print(stderr, "{}\n\n{}", err.what(), program.help().str());
+  } catch (std::exception& err) {
+    fmt::print(stderr, "{}\n\n{}", err.what(), program.help().str());
+  }
 
-  // Print configuration object
   return 0;
 }
