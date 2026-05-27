@@ -26,7 +26,7 @@ TEST_CASE("Parser::load properly loads from JSON files.", "[parser]") {
       json data = Parser::load(FIXTURE_DIR / "normal_sqlite.json");
 
       CHECK(data["name"] == "cache_store");
-      CHECK(data["dbTypeStr"] == "SQLite");
+      CHECK(data["db_type"] == "SQLite");
     }
   }
 
@@ -49,7 +49,7 @@ TEST_CASE("Parser::load properly loads from JSON files.", "[parser]") {
         json data = Parser::load(FIXTURE_DIR / "invalid_sqlite.json");
 
         CHECK_FALSE(data.contains("name"));
-        CHECK(data["dbTypeStr"] == "SQLite");
+        CHECK(data["db_type"] == "SQLite");
       }
     }
 

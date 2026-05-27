@@ -1,4 +1,4 @@
 {
   "name": "cache_store",
-  "dbTypeStr": "SQLite"
+  "db_type": "SQLite"
 }
